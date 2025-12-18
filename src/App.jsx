@@ -34,6 +34,7 @@ a.click();
 a.remove();
 URL.revokeObjectURL(url);
 }
+
 function clampHandle(handle) {
 const h = (handle || "").trim();
 if (!h) return "";
@@ -218,6 +219,8 @@ return created;
 }, []);
 
 
+
+
 const [consent, setConsent] = useState(() => {
   const savedConsent = localStorage.getItem(STORAGE_KEYS.consent);
   return savedConsent === "essential" || savedConsent === "all" ? savedConsent : null;
@@ -304,6 +307,22 @@ return Object.keys(e).length === 0;
 
 async function submit() {
 if (!validateClaim()) return;
+const row = {
+  session_id: session.id,
+  instagram: clampHandle(ig),
+  cookie_consent: consent ?? null,
+  quiz: { answers, totalScore, verdict: verdict.badge },
+  gift: chosenGift,
+  shipping: wantsShipping ? address : null,
+};
+
+const { error } = await supabase.from("submissions").insert(row);
+if (error) {
+  alert("Помилка збереження: " + error.message);
+  return;
+}
+
+setStep("done");
 
 
 const payload = {
